@@ -1,0 +1,25 @@
+{
+  "name": "smtp-relay-server",
+  "version": "1.0.0",
+  "description": "Multi-Account SMTP Gateway & API Service with Daily Quota Rotation for Websites",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "smtp",
+    "otp",
+    "email-gateway",
+    "nodemailer",
+    "api-key"
+  ],
+  "author": "Antigravity",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "nodemailer": "^6.10.0"
+  }
+}
