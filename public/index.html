@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SMTP Relay Gateway - OTP & Mail Service</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <h2>RelayMail</h2>
+          <span class="brand-subtitle">SMTP OTP Gateway</span>
+        </div>
+      </div>
+
+      <div class="server-status-card">
+        <div class="status-indicator">
+          <span class="dot-pulse"></span>
+          <span>System Live</span>
+        </div>
+        <div class="quota-pill" id="sidebarQuotaPill">1,000 Mails/Day</div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="dashboard">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-tab="apikeys">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+          <span>API Keys</span>
+        </button>
+        <button class="nav-item" data-tab="accounts">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+          <span>Gmail Accounts</span>
+        </button>
+        <button class="nav-item" data-tab="tester">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+          <span>Live Tester</span>
+        </button>
+        <button class="nav-item" data-tab="logs">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+          <span>Delivery Logs</span>
+        </button>
+        <button class="nav-item" data-tab="snippets">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+          <span>Integration Code</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="api-endpoint-badge">
+          <span>Base API Endpoint:</span>
+          <code>http://localhost:3000/api/v1</code>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-title">
+          <h1 id="pageTitle">Overview Dashboard</h1>
+          <p id="pageSubtitle">Monitor daily quota usage, email rotation, and website API calls.</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="fetchDashboardData()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            Refresh Data
+          </button>
+          <button class="btn btn-primary" onclick="switchTab('tester')">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+            Send Test OTP
+          </button>
+        </div>
+      </header>
+
+      <!-- TAB 1: DASHBOARD -->
+      <section id="tab-dashboard" class="tab-content active">
+        <!-- Metric Cards -->
+        <div class="metrics-grid">
+          <div class="card metric-card">
+            <div class="card-header">
+              <span class="metric-title">Sent Today</span>
+              <div class="icon-circle icon-indigo">📩</div>
+            </div>
+            <div class="metric-value" id="statSentToday">0</div>
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill" id="statSentTodayProgress" style="width: 0%;"></div>
+            </div>
+            <span class="metric-subtext" id="statSentTodaySub">0 / 1,000 Mails Sent</span>
+          </div>
+
+          <div class="card metric-card">
+            <div class="card-header">
+              <span class="metric-title">Remaining Daily Quota</span>
+              <div class="icon-circle icon-emerald">⚡</div>
+            </div>
+            <div class="metric-value" id="statRemainingQuota">1,000</div>
+            <span class="badge badge-success" style="align-self: flex-start; margin-top: 12px;">Resets Daily at Midnight</span>
+          </div>
+
+          <div class="card metric-card">
+            <div class="card-header">
+              <span class="metric-title">Active Gmail Accounts</span>
+              <div class="icon-circle icon-blue">🌐</div>
+            </div>
+            <div class="metric-value" id="statActiveAccounts">2 / 2</div>
+            <span class="metric-subtext">Auto-rotating load balancer</span>
+          </div>
+
+          <div class="card metric-card">
+            <div class="card-header">
+              <span class="metric-title">Delivery Success Rate</span>
+              <div class="icon-circle icon-purple">🎯</div>
+            </div>
+            <div class="metric-value" id="statSuccessRate">100%</div>
+            <span class="metric-subtext" id="statTotalAllTime">0 Total Emails Logged</span>
+          </div>
+        </div>
+
+        <!-- Account Quota Breakdown -->
+        <div class="section-title-group">
+          <h3>Connected Gmail Accounts (Daily Limits)</h3>
+          <p>Each Gmail account allows 500 emails/day. Emails auto-rotate between active accounts.</p>
+        </div>
+
+        <div class="accounts-grid" id="dashboardAccountsGrid">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Quick Integration Banner -->
+        <div class="card integration-banner">
+          <div class="banner-content">
+            <h3>⚡ Quick API Integration</h3>
+            <p>Use your Master API Key in your web application to start sending OTP emails immediately!</p>
+            <div class="master-key-box">
+              <code id="dashboardMasterKeyDisplay">smtp_live_master_key_1000</code>
+              <button class="btn btn-sm btn-light" onclick="copyMasterKey()">Copy API Key</button>
+            </div>
+          </div>
+          <div class="banner-action">
+            <button class="btn btn-primary" onclick="switchTab('snippets')">View Code Snippets &rarr;</button>
+          </div>
+        </div>
+
+        <!-- Recent Logs Table -->
+        <div class="card logs-preview-card">
+          <div class="card-title-bar">
+            <h3>Recent Dispatch Logs</h3>
+            <button class="btn btn-sm btn-secondary" onclick="switchTab('logs')">View All Logs</button>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Type</th>
+                  <th>Recipient</th>
+                  <th>Subject</th>
+                  <th>Sender Account</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="recentLogsTableBody">
+                <tr><td colspan="6" class="text-center">No email logs recorded yet. Send a test OTP to see live logs!</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: API KEYS -->
+      <section id="tab-apikeys" class="tab-content">
+        <div class="card-title-bar">
+          <div>
+            <h3>API Keys Manager</h3>
+            <p>Create separate API keys for your websites (e.g. Website A, Website B) to authenticate OTP requests.</p>
+          </div>
+          <button class="btn btn-primary" onclick="openCreateKeyModal()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+            Generate New API Key
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Key Name</th>
+                  <th>API Key Token</th>
+                  <th>Created</th>
+                  <th>Last Used</th>
+                  <th>Requests</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="apiKeysTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: GMAIL ACCOUNTS -->
+      <section id="tab-accounts" class="tab-content">
+        <div class="card-title-bar">
+          <div>
+            <h3>Gmail Accounts & App Passwords</h3>
+            <p>Manage your sending accounts. When one account reaches 500 emails/day, the server seamlessly switches to the next account.</p>
+          </div>
+          <button class="btn btn-primary" onclick="openAddAccountModal()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+            Add Gmail Account
+          </button>
+        </div>
+
+        <div class="accounts-grid" id="fullAccountsGrid">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- TAB 4: LIVE TESTER -->
+      <section id="tab-tester" class="tab-content">
+        <div class="tester-container">
+          <div class="card test-form-card">
+            <h3>🚀 Send Live Test Email / OTP</h3>
+            <p style="margin-bottom: 20px; color: var(--text-muted);">Test email delivery directly using your configured Gmail SMTP rotation.</p>
+
+            <form id="testMailForm" onsubmit="handleSendTest(event)">
+              <div class="form-group">
+                <label>Dispatch Type</label>
+                <div class="radio-group">
+                  <label class="radio-label">
+                    <input type="radio" name="dispatchType" value="otp" checked onchange="toggleTestFormMode()">
+                    <span>OTP Email (Branded HTML Template)</span>
+                  </label>
+                  <label class="radio-label">
+                    <input type="radio" name="dispatchType" value="email" onchange="toggleTestFormMode()">
+                    <span>Custom Email</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Recipient Email *</label>
+                <input type="email" id="testTo" class="form-control" placeholder="e.g. recipient@example.com" required>
+              </div>
+
+              <div id="otpFields">
+                <div class="form-row">
+                  <div class="form-group col">
+                    <label>OTP Code</label>
+                    <input type="text" id="testOtpCode" class="form-control" placeholder="Auto-generated if empty">
+                  </div>
+                  <div class="form-group col">
+                    <label>App Name</label>
+                    <input type="text" id="testAppName" class="form-control" value="My Website">
+                  </div>
+                </div>
+              </div>
+
+              <div id="customEmailFields" style="display: none;">
+                <div class="form-group">
+                  <label>Subject</label>
+                  <input type="text" id="testSubject" class="form-control" placeholder="e.g. Welcome to Our Website!">
+                </div>
+                <div class="form-group">
+                  <label>HTML Content</label>
+                  <textarea id="testBody" class="form-control" rows="4" placeholder="<h1>Hello World</h1><p>This is a test message.</p>"></textarea>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block" id="btnSendTest">
+                <span id="btnTestText">🚀 Dispatch Test Email</span>
+              </button>
+            </form>
+          </div>
+
+          <div class="card test-response-card">
+            <h3>Console & Server Output</h3>
+            <p style="margin-bottom: 12px; color: var(--text-muted);">Real-time dispatch response from Nodemailer:</p>
+            <pre class="code-block" id="testResponseConsole">// Server response will be displayed here after dispatch...</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: LOGS -->
+      <section id="tab-logs" class="tab-content">
+        <div class="card-title-bar">
+          <div>
+            <h3>Full Dispatch Logs</h3>
+            <p>Detailed history of all OTPs and emails processed by this SMTP server.</p>
+          </div>
+          <button class="btn btn-secondary" onclick="fetchLogs()">Refresh Logs</button>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Type</th>
+                  <th>Recipient</th>
+                  <th>Subject</th>
+                  <th>Sender Account</th>
+                  <th>API Key Used</th>
+                  <th>Status</th>
+                  <th>Error Details</th>
+                </tr>
+              </thead>
+              <tbody id="allLogsTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: INTEGRATION CODE SNIPPETS -->
+      <section id="tab-snippets" class="tab-content">
+        <div class="card">
+          <h3>💻 Website Integration Code Snippets</h3>
+          <p style="margin-bottom: 24px; color: var(--text-muted);">Copy and paste these snippets into any website or backend to send OTPs using your SMTP Server.</p>
+
+          <div class="snippet-selector">
+            <button class="snippet-tab active" onclick="switchSnippet('js')">JavaScript (Fetch / Frontend)</button>
+            <button class="snippet-tab" onclick="switchSnippet('nodejs')">Node.js (Axios / Fetch)</button>
+            <button class="snippet-tab" onclick="switchSnippet('python')">Python (Requests)</button>
+            <button class="snippet-tab" onclick="switchSnippet('php')">PHP (cURL)</button>
+            <button class="snippet-tab" onclick="switchSnippet('curl')">cURL Command</button>
+          </div>
+
+          <div class="code-box-container">
+            <div class="code-header">
+              <span id="snippetLangLabel">JavaScript (Fetch)</span>
+              <button class="btn btn-sm btn-light" onclick="copySnippetCode()">Copy Code</button>
+            </div>
+            <pre class="code-block" id="codeSnippetBox">Loading code snippet...</pre>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Create Key Modal -->
+  <div class="modal-overlay" id="createKeyModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Create New API Key</h3>
+        <button class="close-btn" onclick="closeCreateKeyModal()">&times;</button>
+      </div>
+      <form onsubmit="handleCreateKey(event)">
+        <div class="form-group">
+          <label>Website / Application Name *</label>
+          <input type="text" id="newKeyName" class="form-control" placeholder="e.g. My E-commerce Site OTPs" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeCreateKeyModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Generate API Key</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add/Edit Account Modal -->
+  <div class="modal-overlay" id="accountModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="accountModalTitle">Add Gmail Account</h3>
+        <button class="close-btn" onclick="closeAccountModal()">&times;</button>
+      </div>
+      <form onsubmit="handleSaveAccount(event)">
+        <input type="hidden" id="editAccountId">
+        <div class="form-group">
+          <label>Gmail Address *</label>
+          <input type="email" id="accEmail" class="form-control" placeholder="e.g. yourname@gmail.com" required>
+        </div>
+        <div class="form-group">
+          <label>App Password (16 characters) *</label>
+          <input type="password" id="accPass" class="form-control" placeholder="16 character Google App Password" required>
+          <small class="form-help">Generate via Google Account -> Security -> App Passwords</small>
+        </div>
+        <div class="form-group">
+          <label>Daily Limit (Max Mails/Day)</label>
+          <input type="number" id="accMaxDaily" class="form-control" value="500" min="1" max="2000" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeAccountModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
